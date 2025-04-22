@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Korba Transaction Explanation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f7f7;
+            margin: 40px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #2980b9;
+        }
+        ul {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+        code {
+            background: #eee;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 90%;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Korba SQL Query Explained (Like Excel)</h1>
+
+    <div class="section">
+        <h2>🗂️ Data Sheets Used</h2>
+        <ul>
+            <li><strong>korba_daily</strong> – Korba transactions</li>
+            <li><strong>atfunds_raw</strong> – Transactions from another system</li>
+            <li><strong>ATfunds_unmatch</strong> – Unmatched transactions needing review</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>🧩 Step 1: Filter Korba Transactions</h2>
+        <ul>
+            <li>Transaction ID starts with <code>dis</code> or <code>col</code></li>
+            <li>Transaction date is between <code>April 14 - 20, 2025</code></li>
+            <li>Status is <strong>not</strong> <code>success</code></li>
+        </ul>
+        <p><em>→ This gives you a filtered Korba list.</em></p>
+    </div>
+
+    <div class="section">
+        <h2>🛠️ Step 2: Create List of Valid Accounts from ATfunds</h2>
+        <ul>
+            <li>Find <strong>successful</strong> transactions in <code>atfunds_raw</code></li>
+            <li>Check if their Transaction ID appears in <code>ATfunds_unmatch.SendingHouseID</code></li>
+            <li><strong>Get accounts:</strong></li>
+            <ul>
+                <li><strong>Payer</strong> (if NOT <code>261065081</code>)</li>
+                <li><strong>Payee</strong> (if Payer IS <code>261065081</code>)</li>
+            </ul>
+        </ul>
+        <p><em>→ This forms your list of valid, successful account numbers.</em></p>
+    </div>
+
+    <div class="section">
+        <h2>🔍 Step 3: Cross-match with Korba</h2>
+        <ul>
+            <li>In your filtered Korba list, extract the <strong>last 9 digits</strong> of <code>Account_Wallet_ID</code></li>
+            <li>Check if those 9 digits exist in your valid account list</li>
+        </ul>
+        <p><em>→ Keep only the matching rows</em></p>
+    </div>
+
+    <div class="section">
+        <h2>✅ Final Output</h2>
+        <p>You now have a list of Korba transactions that:</p>
+        <ul>
+            <li>Appear to be failed or pending</li>
+            <li>Are linked to successful ATfunds transactions</li>
+            <li>Match specific accounts you're investigating</li>
+        </ul>
+    </div>
+
+</body>
+</html>

@@ -35,17 +35,18 @@ select * from [dbo].[mtn_direct_matched]
 where debit_amt != InflowNetAmount
   </pre>
   <p><strong>Layman’s version:</strong> “From the <em>mtn_direct_matched</em> sheet, show me all rows where the amount debited (from <em>debit_amt</em>) is not the same as the amount received (in <em>InflowNetAmount</em>).”</p>
+  <p><strong>Recommended Action:</strong> “Investigate the source of the discrepancy.”</p>
 </section>
 
 <section class="explanation">
-  <h2>2. Korba Success, MTN Fail — Status Column Mismatch</h2>
+  <h2>2. Korba Fail, MTN Success — Status Column Mismatch</h2>
   <p>
     Still within the <strong>mtn_direct_matched</strong> sheet, this query compares two columns:
     <ul>
       <li><strong>exchange_status</strong> — MTN’s recorded status</li>
       <li><strong>mtndirect_status</strong> — Korba’s recorded status</li>
     </ul>
-    It looks for cases where Korba marks the transaction as successful but MTN does not.
+    It looks for cases where MTN marks the transaction as successful but MTN does not.
   </p>
   <pre>
 use korba;
@@ -54,7 +55,13 @@ select * from [dbo].[mtn_direct_matched]
 where exchange_status not like '%succe%'
 and mtndirect_status like '%succ%'
   </pre>
-  <p><strong>Layman’s version:</strong> “From the <em>mtn_direct_matched</em> sheet, find rows where Korba's <em>mtndirect_status</em> column says success but MTN's <em>exchange_status</em> column does not.”</p>
+  <p><strong>Layman’s version:</strong> “From the <em>mtn_direct_matched</em> sheet, find rows where Korba's <em>mtndirect_status</em> column says success but  <em>exchange_status</em> column does not.”</p>
+  <p><strong>Recommended Action:</strong></p>
+<ul>
+  <li>If the <em>exchange_status</em> is <strong>Pending</strong>, update the transaction to <strong>Success</strong> and reflect this in the report.</li>
+  <li>If the <em>exchange_status</em> is <strong>Failed</strong>, escalate the case by informing <strong>Revenue Assurance</strong>, <strong>Finance</strong>, and <strong>Tech Support</strong> for investigation and further process.</li>
+</ul>
+
 </section>
 
 <section class="explanation">
@@ -91,6 +98,8 @@ where Transaction_ID in (
 );
   </pre>
   <p><strong>Layman’s version:</strong> “From the <em>korba_daily</em> sheet, show me transactions that are pending in the <em>MTN_Direct_Exchange_unmatch</em> sheet and haven’t been linked to an external ID in the <em>retrieved_ids</em> sheet.”</p>
+  <p><strong>Recommended Action:</strong> For all IDs here that cannot be linked, update their status to <strong>Fail</strong> </p>
+
 </section>
 
 <section class="explanation">
@@ -110,6 +119,8 @@ where Transaction_ID in (
 );
   </pre>
   <p><strong>Layman’s version:</strong> “From the <em>korba_daily</em> sheet, show me transactions that were marked pending but now have a match in <em>retrieved_ids</em>, so we consider them successful.”</p>
+  <p><strong>Recommended Action:</strong> For all IDs here that have been linked, update their status to <strong>Success</strong> </p>
+
 </section>
 
 </body>

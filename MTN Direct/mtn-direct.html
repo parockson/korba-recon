@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Korba - Page 1</title>
+  <link rel="stylesheet" href="../styles/korba.css">
+</head>
+<body>
+
+<header>
+  <a href="../index.html" class="back-link">← Back</a>
+  Korba Dashboard
+  <div class="page-header">
+    <img src="images/logo1.jpg" alt="Page 1 Logo" />
+    <div class="page-header-title">Page 1</div>
+  </div>
+</header>
+
+<section class="explanation">
+  <h2>1. Debit and Inflow Mismatch in the Sheet</h2>
+  <p>
+    Think of a spreadsheet named <strong>mtn_direct_matched</strong>. In this sheet, each row represents a transaction.
+    There are two important columns:
+    <ul>
+      <li><strong>debit_amt</strong> — amount debited (money taken out)</li>
+      <li><strong>InflowNetAmount</strong> — amount received (money credited)</li>
+    </ul>
+    This query picks all the rows where these two amounts <strong>don’t match</strong>.
+  </p>
+  <pre>
+use korba;
+
+select * from [dbo].[mtn_direct_matched]
+where debit_amt != InflowNetAmount
+  </pre>
+  <p><strong>Layman’s version:</strong> “From the <em>mtn_direct_matched</em> sheet, show me all rows where the amount debited (from <em>debit_amt</em>) is not the same as the amount received (in <em>InflowNetAmount</em>).”</p>
+</section>
+
+<section class="explanation">
+  <h2>2. Korba Success, MTN Fail — Status Column Mismatch</h2>
+  <p>
+    Still within the <strong>mtn_direct_matched</strong> sheet, this query compares two columns:
+    <ul>
+      <li><strong>exchange_status</strong> — MTN’s recorded status</li>
+      <li><strong>mtndirect_status</strong> — Korba’s recorded status</li>
+    </ul>
+    It looks for cases where Korba marks the transaction as successful but MTN does not.
+  </p>
+  <pre>
+use korba;
+
+select * from [dbo].[mtn_direct_matched]
+where exchange_status not like '%succe%'
+and mtndirect_status like '%succ%'
+  </pre>
+  <p><strong>Layman’s version:</strong> “From the <em>mtn_direct_matched</em> sheet, find rows where Korba's <em>mtndirect_status</em> column says success but MTN's <em>exchange_status</em> column does not.”</p>
+</section>
+
+<section class="explanation">
+  <h2>3. Pending Unmatched Transactions Not Retrieved</h2>
+  <p>
+    This query works across three sheets:
+    <ul>
+      <li><strong>korba_daily</strong> — the main daily transaction list</li>
+      <li><strong>MTN_Direct_Exchange_unmatch</strong> — where exchanges are pending</li>
+      <li><strong>retrieved_ids</strong> — used to track successful matches</li>
+    </ul>
+    It shows transactions that are:
+    <ul>
+      <li>Marked as 'Pending' in <strong>MTN_Direct_Exchange_unmatch</strong></li>
+      <li>And have no matching <strong>external_transaction_id</strong> in the <strong>retrieved_ids</strong> sheet</li>
+    </ul>
+    It then lists those IDs and statuses from <strong>korba_daily</strong>.
+  </p>
+  <pre>
+use korba;
+
+select Transaction_ID as 'fail', Status from korba_daily
+where Transaction_ID in (
+  SELECT 
+      m.[TransID] AS "exchange ID to fail"
+  FROM 
+      [dbo].[MTN_Direct_Exchange_unmatch] m
+  LEFT JOIN 
+      [dbo].[retrieved_ids] r
+      ON m.[TransID] = r.korba_id
+  WHERE 
+      m.[Transaction_status] = 'Pending'
+    AND r.[external_transaction_id] IS NULL
+);
+  </pre>
+  <p><strong>Layman’s version:</strong> “From the <em>korba_daily</em> sheet, show me transactions that are pending in the <em>MTN_Direct_Exchange_unmatch</em> sheet and haven’t been linked to an external ID in the <em>retrieved_ids</em> sheet.”</p>
+</section>
+
+<section class="explanation">
+  <h2>4. Pending Transactions That Became Successful</h2>
+  <p>
+    This query also uses the <strong>korba_daily</strong> and <strong>retrieved_ids</strong> sheets. It identifies transactions that were originally <em>pending</em> in <strong>korba_daily</strong> but now have a match in <strong>retrieved_ids</strong> — indicating success.
+  </p>
+  <pre>
+use korba;
+
+select Transaction_ID as 'success', Status from korba_daily
+where Transaction_ID in (
+  select distinct korba_id as "Exchange Pending to success" from [retrieved_ids]
+  where [korba_id] in
+    (select [Transaction_ID] from Korba_Daily
+     where status = 'pending')
+);
+  </pre>
+  <p><strong>Layman’s version:</strong> “From the <em>korba_daily</em> sheet, show me transactions that were marked pending but now have a match in <em>retrieved_ids</em>, so we consider them successful.”</p>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,85 @@
+/* korba.css */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f4f8;
+}
+
+header {
+  background-color: #ed1944;
+  color: #ffffff;
+  padding: 20px;
+  text-align: center;
+  font-size: 28px;
+  position: relative;
+}
+
+.back-link {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background-color: #ffffff;
+  color: #ed1944;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.back-link:hover {
+  background-color: #f0f0f0;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.page-header img {
+  height: 50px;
+  border-radius: 8px;
+}
+
+.page-header-title {
+  font-size: 20px;
+  color: #ed1944;
+  font-weight: bold;
+}
+
+.explanation {
+  padding: 20px 40px;
+  background-color: #ffffff;
+  margin: 20px;
+  border-left: 6px solid #ed1944;
+  font-size: 16px;
+  color: #333;
+  line-height: 1.6;
+}
+
+pre {
+  background-color: #f4f4f4;
+  padding: 15px;
+  overflow-x: auto;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 15px;
+}
+
+h2 {
+  color: #ed1944;
+}
+
+@media (max-width: 600px) {
+  .page-header-title {
+    font-size: 16px;
+  }
+
+  .page-header img {
+    height: 40px;
+  }
+}
